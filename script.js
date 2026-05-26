@@ -8,6 +8,7 @@ const screens = {
 const app = document.getElementById("app");
 const bgMusic = document.getElementById("bgMusic");
 const soundToggle = document.getElementById("soundToggle");
+const cameraFeed = document.getElementById("cameraFeed");
 const miaFigure = document.getElementById("miaFigure");
 const supportBubble = document.getElementById("supportBubble");
 const successBubble = document.getElementById("successBubble");
@@ -27,6 +28,7 @@ let activeScreenName = "home";
 let isSoundOn = true;
 let currentAudioSource = "default";
 let pendingAutoplay = false;
+let cameraStream = null;
 
 const audioSources = {
   default: "assets/calm-ambient.mp3",
@@ -121,7 +123,48 @@ function showScreen(screenName) {
 }
 
 function setStoryClass(className) {
-  app.className = `app ${className}`.trim();
+  const keepCamera = app.classList.contains("camera-mode");
+  app.className = ["app", className, keepCamera ? "camera-mode" : ""]
+    .filter(Boolean)
+    .join(" ");
+}
+
+async function startCameraBackground() {
+  if (cameraStream || !cameraFeed) {
+    return;
+  }
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    return;
+  }
+
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" },
+      },
+      audio: false,
+    });
+
+    cameraFeed.srcObject = cameraStream;
+    app.classList.add("camera-mode");
+  } catch {
+    cameraStream = null;
+    app.classList.remove("camera-mode");
+  }
+}
+
+function stopCameraBackground() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach((track) => track.stop());
+    cameraStream = null;
+  }
+
+  if (cameraFeed) {
+    cameraFeed.srcObject = null;
+  }
+
+  app.classList.remove("camera-mode");
 }
 
 function renderStoryStep(stepName) {
@@ -254,6 +297,7 @@ function handleStoryBubble() {
 
 function showFinal() {
   clearTimers();
+  stopCameraBackground();
   showScreen("final");
   setStoryClass("");
   startDanmaku();
@@ -262,6 +306,7 @@ function showFinal() {
 function restartExperience() {
   clearTimers();
   stopDanmaku();
+  stopCameraBackground();
   currentStoryStep = "nervous";
   switchAudioSource("default");
   showScreen("home");
@@ -344,6 +389,7 @@ document.addEventListener("click", (event) => {
   }
 
   if (action === "start-story") {
+    startCameraBackground();
     renderStoryStep("nervous");
   }
 
