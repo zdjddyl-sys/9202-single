@@ -16,19 +16,19 @@ const sceneText = document.getElementById("sceneText");
 const guidanceText = document.getElementById("guidanceText");
 const breathWord = document.getElementById("breathWord");
 const messageForm = document.getElementById("messageForm");
+const messageName = document.getElementById("messageName");
 const messageInput = document.getElementById("messageInput");
 const danmakuWall = document.getElementById("danmakuWall");
 
 let currentStoryStep = "nervous";
 let meditationTimers = [];
 let breathTimer = null;
-let danmakuTimer = null;
-let danmakuIndex = 0;
 let activeScreenName = "home";
 let isSoundOn = true;
 let currentAudioSource = "default";
 let pendingAutoplay = false;
 let cameraStream = null;
+const messageStorageKey = "ptsd-support-message-board";
 
 const audioSources = {
   default: "assets/calm-ambient.mp3",
@@ -49,6 +49,16 @@ const supportMessages = [
   "Healing is not a race.",
   "Small steps still matter.",
 ];
+
+const starterMessages = supportMessages.slice(0, 5).map((text, index) => ({
+  id: `starter-${index}`,
+  author: "Support",
+  text,
+  isUser: false,
+  createdAt: "",
+}));
+
+let boardMessages = loadBoardMessages();
 
 const storySteps = {
   nervous: {
@@ -300,12 +310,11 @@ function showFinal() {
   stopCameraBackground();
   showScreen("final");
   setStoryClass("");
-  startDanmaku();
+  renderMessageBoard();
 }
 
 function restartExperience() {
   clearTimers();
-  stopDanmaku();
   stopCameraBackground();
   currentStoryStep = "nervous";
   switchAudioSource("default");
@@ -313,33 +322,91 @@ function restartExperience() {
   setStoryClass("");
 }
 
-function createFloatingMessage(text, isUser = false) {
-  const message = document.createElement("span");
-  message.className = `floating-message${isUser ? " is-user" : ""}`;
-  message.textContent = text;
-  message.style.setProperty("--top", `${8 + Math.random() * 78}%`);
-  message.style.setProperty("--duration", `${17 + Math.random() * 8}s`);
-  danmakuWall.appendChild(message);
-  message.addEventListener("animationend", () => message.remove());
+function loadBoardMessages() {
+  try {
+    const storedMessages = JSON.parse(localStorage.getItem(messageStorageKey));
+
+    if (Array.isArray(storedMessages) && storedMessages.length > 0) {
+      return storedMessages
+        .filter((message) => message && typeof message.text === "string")
+        .slice(-80);
+    }
+  } catch {
+    localStorage.removeItem(messageStorageKey);
+  }
+
+  return starterMessages;
 }
 
-function startDanmaku() {
-  stopDanmaku();
+function saveBoardMessages() {
+  localStorage.setItem(messageStorageKey, JSON.stringify(boardMessages.slice(-80)));
+}
+
+function getInitials(author) {
+  const cleanAuthor = author.trim();
+
+  if (!cleanAuthor) {
+    return "?";
+  }
+
+  return cleanAuthor
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+}
+
+function formatMessageTime(createdAt) {
+  if (!createdAt) {
+    return "Saved";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(createdAt));
+}
+
+function createBoardMessage(message) {
+  const item = document.createElement("article");
+  item.className = `board-message${message.isUser ? " is-user" : ""}`;
+
+  const avatar = document.createElement("span");
+  avatar.className = "message-avatar";
+  avatar.textContent = getInitials(message.author || "Guest");
+
+  const body = document.createElement("div");
+  const meta = document.createElement("div");
+  meta.className = "message-meta";
+
+  const author = document.createElement("span");
+  author.className = "message-author";
+  author.textContent = message.author || "Guest";
+
+  const time = document.createElement("span");
+  time.className = "message-time";
+  time.textContent = formatMessageTime(message.createdAt);
+
+  const text = document.createElement("p");
+  text.className = "message-text";
+  text.textContent = message.text;
+
+  meta.append(author, time);
+  body.append(meta, text);
+  item.append(avatar, body);
+
+  return item;
+}
+
+function renderMessageBoard(scrollToLatest = false) {
   danmakuWall.replaceChildren();
-  supportMessages.slice(0, 5).forEach((message, index) => {
-    setTimeout(() => createFloatingMessage(message), index * 550);
+  boardMessages.forEach((message) => {
+    danmakuWall.appendChild(createBoardMessage(message));
   });
 
-  danmakuTimer = setInterval(() => {
-    createFloatingMessage(supportMessages[danmakuIndex % supportMessages.length]);
-    danmakuIndex += 1;
-  }, 2300);
-}
-
-function stopDanmaku() {
-  if (danmakuTimer) {
-    clearInterval(danmakuTimer);
-    danmakuTimer = null;
+  if (scrollToLatest) {
+    danmakuWall.scrollTop = danmakuWall.scrollHeight;
   }
 }
 
@@ -407,11 +474,20 @@ requestAudioPlay();
 messageForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const text = messageInput.value.trim();
+  const author = messageName.value.trim() || "Guest";
 
   if (!text) {
     return;
   }
 
-  createFloatingMessage(text, true);
+  boardMessages.push({
+    id: `user-${Date.now()}`,
+    author,
+    text,
+    isUser: true,
+    createdAt: new Date().toISOString(),
+  });
+  saveBoardMessages();
+  renderMessageBoard(true);
   messageInput.value = "";
 });
