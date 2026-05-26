@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Understanding PTSD</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <audio id="bgMusic" loop preload="auto" autoplay>
+      <source src="assets/calm-ambient.mp3" type="audio/mpeg" />
+    </audio>
+
+    <main class="app" id="app">
+      <div class="ambient-shapes" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="true">
+        Sound On
+      </button>
+
+      <section class="screen info-screen is-active" id="homeScreen" aria-labelledby="homeTitle">
+        <div class="soft-card">
+          <p class="eyebrow">Awareness experience</p>
+          <h1 id="homeTitle">Understanding PTSD</h1>
+          <p>
+            PTSD, or Post-Traumatic Stress Disorder, can happen after a person
+            experiences something frightening or overwhelming. It may make
+            someone feel unsafe, anxious, or trapped in painful memories, even
+            when they are no longer in danger.
+          </p>
+          <p>
+            Supportive actions such as creating a calm environment, listening
+            gently, breathing slowly, doing relaxing activities, and practicing
+            mindfulness may help someone feel safer in the moment.
+          </p>
+          <p class="notice">This experience is for awareness only and is not medical advice.</p>
+          <button class="primary-button" type="button" data-action="show-intro">Example</button>
+        </div>
+      </section>
+
+      <section class="screen info-screen" id="introScreen" aria-labelledby="introTitle" hidden>
+        <div class="soft-card intro-card">
+          <div class="simple-person preview-person" aria-hidden="true">
+            <span class="preview-head"></span>
+            <span class="preview-body"></span>
+            <span class="preview-arm preview-arm-left"></span>
+            <span class="preview-arm preview-arm-right"></span>
+            <span class="preview-leg preview-leg-left"></span>
+            <span class="preview-leg preview-leg-right"></span>
+          </div>
+          <p class="eyebrow">Short story</p>
+          <h1 id="introTitle">Meet Mia</h1>
+          <p>
+            Mia is a design student who recently went through a frightening
+            experience. Since then, certain sounds and stressful moments can
+            bring back strong memories. Today, before class, Mia suddenly feels
+            overwhelmed and unsafe.
+          </p>
+          <button class="primary-button" type="button" data-action="start-story">Help Mia</button>
+        </div>
+      </section>
+
+      <section class="screen scene-screen" id="storyScreen" aria-live="polite" hidden>
+        <div class="real-scene" aria-hidden="true">
+          <div class="photo-fallback"></div>
+          <div class="scene-overlay"></div>
+        </div>
+
+        <div class="scene-stage">
+          <div class="bubble-row">
+            <button class="support-bubble" id="supportBubble" type="button">Help Mia</button>
+            <p class="success-bubble" id="successBubble">You helped Mia calm down.</p>
+          </div>
+
+          <div class="breathing-ring" id="breathingRing" aria-hidden="true"></div>
+          <p class="breath-word" id="breathWord" aria-hidden="true">Inhale...</p>
+
+          <div class="motion-lines" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <div class="sweat-drops" aria-hidden="true">
+            <span></span>
+            <span></span>
+          </div>
+
+          <div class="music-notes" aria-hidden="true">
+            <span>&#9834;</span>
+            <span>&#9833;</span>
+            <span>&#9834;</span>
+          </div>
+
+          <svg
+            class="mia-figure"
+            id="miaFigure"
+            viewBox="0 0 220 280"
+            role="img"
+            aria-label="Animated simplified figure of Mia"
+          >
+            <g class="standing-parts">
+              <circle class="part head" cx="110" cy="50" r="26"></circle>
+              <rect class="part torso" x="82" y="83" width="56" height="88" rx="21"></rect>
+              <rect class="part arm arm-left" x="58" y="88" width="22" height="86" rx="11"></rect>
+              <rect class="part arm arm-right" x="140" y="88" width="22" height="86" rx="11"></rect>
+              <rect class="part leg leg-left" x="84" y="163" width="22" height="88" rx="11"></rect>
+              <rect class="part leg leg-right" x="114" y="163" width="22" height="88" rx="11"></rect>
+            </g>
+
+            <g class="meditation-parts" aria-hidden="true">
+              <circle class="part med-head" cx="110" cy="58" r="26"></circle>
+              <rect class="part med-torso" x="82" y="91" width="56" height="76" rx="22"></rect>
+              <rect class="part med-arm med-arm-left" x="73" y="122" width="58" height="20" rx="10"></rect>
+              <rect class="part med-arm med-arm-right" x="89" y="122" width="58" height="20" rx="10"></rect>
+              <rect class="part med-leg med-leg-left" x="46" y="176" width="82" height="24" rx="12"></rect>
+              <rect class="part med-leg med-leg-right" x="92" y="176" width="82" height="24" rx="12"></rect>
+            </g>
+
+            <g class="headphones" aria-hidden="true">
+              <path d="M82 52 C82 17 138 17 138 52" fill="none" stroke="#111111" stroke-width="8" stroke-linecap="round" />
+              <rect x="72" y="47" width="16" height="32" rx="7"></rect>
+              <rect x="132" y="47" width="16" height="32" rx="7"></rect>
+            </g>
+          </svg>
+
+          <p class="scene-text" id="sceneText">Mia feels tense, unsafe, and overwhelmed.</p>
+          <p class="guidance-text" id="guidanceText"></p>
+        </div>
+      </section>
+
+      <section class="screen final-screen" id="finalScreen" aria-labelledby="finalTitle" hidden>
+        <div class="final-content">
+          <p class="eyebrow">Gentle words</p>
+          <h1 id="finalTitle">Messages of Support</h1>
+          <div class="danmaku-wall" id="danmakuWall" aria-label="Floating support messages"></div>
+
+          <form class="message-form" id="messageForm">
+            <input
+              id="messageInput"
+              type="text"
+              maxlength="70"
+              placeholder="Write your own message..."
+              autocomplete="off"
+            />
+            <button class="send-button" type="submit">Send</button>
+          </form>
+
+          <button class="restart-button" type="button" data-action="restart">Restart</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
